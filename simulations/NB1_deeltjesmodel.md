@@ -1,3 +1,7 @@
+```python
+print('Test aanpassing in notebook')
+```
+
 # NB 1: Deeltjesmodel
 
 
