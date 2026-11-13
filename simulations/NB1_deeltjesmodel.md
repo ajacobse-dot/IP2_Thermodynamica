@@ -35,12 +35,22 @@ Wellicht heb je bovenstaande al eens gezien met het programma Coach. Anders dan 
 
 We nemen als voorbeeld twee fietsers, waarbij de fietser 1 een eenparige beweging uitvoert en fietser 2 een eenparig versnelde beweging:
 
+
+Wat op zou kunnen vallen is dat de snelheid in een cel constant gehouden wordt ($x_i = v_i\cdot\Delta t$), terwijl de snelheid tijdens het tijdsinterval $\Delta t$ toeneemt. De oplossing is dus een benadering van de exacte oplossing, maar door deze methode (Euler explicit forward), moeten we wel voorzichtig zijn met de grootte van het tijdsinterval.
+
+```{exercise}
+Maak het tijdsinterval $dt$ groter en vergelijk de afgelegde weg in de tien seconde. Wat gebeurt er met de afgelegde weg als we $dt$ groter maken? Is dat logisch vanuit gezien de natuurkunde? En gezien de methode van discretisatie? Leg uit.
+
+De afgelegde weg neemt af als we $dt$ groter maken. Vanuit de natuurkunde gezien is dit niet logisch omdat de afgelegde afstand alleen afhangt van de beginwaarden en dus niet van dt. Gezien de methode van discretisatie is het logisch omdat de snelheid ook in de tijdsintervallen toenemen maar hier wordt geen rekening mee gehouden waardoor de afgelegde afstand kleiner is dan de daadwerkelijke afstand.
+```
+
+
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
 
 # Beginwaarden
-dt = 0.25                  #s
+dt = 1      #s
 t_e = 10                   #s
 N = int(t_e/dt)+1
 t = np.arange(0,t_e+dt,dt) #s
@@ -71,21 +81,14 @@ plt.plot(t,x_1,'r.', markersize=1, label='fietser 1')
 plt.plot(t,x_2,'b.', markersize=1, label='fietser 2')
 
 plt.show()
-
+print(x_2[-1])
 
 ```
-
-Wat op zou kunnen vallen is dat de snelheid in een cel constant gehouden wordt ($x_i = v_i\cdot\Delta t$), terwijl de snelheid tijdens het tijdsinterval $\Delta t$ toeneemt. De oplossing is dus een benadering van de exacte oplossing, maar door deze methode (Euler explicit forward), moeten we wel voorzichtig zijn met de grootte van het tijdsinterval.
-
-```{exercise}
-Maak het tijdsinterval $dt$ groter en vergelijk de afgelegde weg in de tien seconde. Wat gebeurt er met de afgelegde weg als we $dt$ groter maken? Is dat logisch vanuit gezien de natuurkunde? En gezien de methode van discretisatie? Leg uit.
-```
-
 
 <!-- Jouw antwoord hier  -->
 
 ```python
-%reset -f  #clears memory as we don't need it further down 
+%reset -f
 ```
 
 ## Naar een deeltjesmodel
@@ -126,6 +129,7 @@ Laten we nu een ook echt een deeltje creëren en kijken wat we ermee kunnen doen
 
 ```python
 # een enkel deeltje:
+import numpy as np
 this_particle = ParticleClass(m=1.0, v=[5.0, 0], r=[0.0, 0.0], R=1.0)
 print(this_particle)
 ```
