@@ -36,7 +36,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Beginwaarden
-dt = 0.25                  #s
+dt = 0.1                 #s
 t_e = 10                   #s
 N = int(t_e/dt)+1
 t = np.arange(0,t_e+dt,dt) #s
@@ -53,6 +53,7 @@ a_2 = .5                   #m/s^2
 # Uitvoeren van de simulatie
 for i in range(0,N-1):
     x_1[i+1] = x_1[i] + v_1*dt
+
     
     x_2[i+1] = x_2[i] + v_2[i]*dt
     v_2[i+1] = v_2[i] + a_2*dt
@@ -77,11 +78,13 @@ Wat op zou kunnen vallen is dat de snelheid in een cel constant gehouden wordt (
 Maak het tijdsinterval $dt$ groter en vergelijk de afgelegde weg in de tien seconde. Wat gebeurt er met de afgelegde weg als we $dt$ groter maken? Is dat logisch vanuit gezien de natuurkunde? En gezien de methode van discretisatie? Leg uit.
 ```
 
+**De afgelegde weg blijft hetzelfde, wat je ook zou verwachten volgens natuurkunde. Het maakt niet uit hoeveel keer je meet, hij blijft dezelfde afgelegde weg houden. Volgens de methode van discretisatie verandert niks aan de constante versnelling, maar wel aan de grafiek van fietser 2 met de niet-constante versnelling. Dan wordt tussen elke tijdstap een constante versnelling aangehouden, maar dit wordt dus minder nauwkeurig hoe groter dt is.**
+
 
 <!-- Jouw antwoord hier  -->
 
 ```python
-%reset -f  #clears memory as we don't need it further down 
+%reset -f 
 ```
 
 ## Naar een deeltjesmodel
@@ -97,6 +100,8 @@ Een *class* is een blauwdruk voor het creëren van objecten (zoals deeltjes, ato
 # Merk op dat de class zelf geen deeltje is! 
 # Een object dat tot een bepaalde class behoort, wordt een instant van die class genoemd. 
 # Je kunt meerdere instants van een class hebben.
+import numpy as np
+import matplotlib.pyplot as plt
 
 class ParticleClass:
     def __init__(self, m, v, r, R):
@@ -179,6 +184,7 @@ print("Hoe een eigenschap (in dit geval: 'r') van het element van het array erui
 Gegeven bovenstaande particles die je hebt aangemaakt, hoe zien de posities er dan uit van die deeltjes?
 Voorspel en controleer vervolgens met onderstaande code.
 ```
+**In de array komt een particle te staan met de verschillende startposities 0 tm 3.**
 
 ```python
 import numpy as np
@@ -229,7 +235,33 @@ En als je wilt gaan voor een uitdaging:
 ```
 
 ```python
-### YOUR CODE HERE ###
+import random
+import numpy as np
+import matplotlib.pyplot as plt
+
+particle_array = []
+
+for start_x in range(11):
+    vx_random = np.random.randint(-5, 6)
+    particle_array.append(ParticleClass(m=1.0, v=[vx_random, 1], r=[start_x, 0.0],R=1.0))
+
+
+for particle, particle_object in enumerate(particle_array):
+    particle_object.update_position(1.0)
+    
+
+plt.figure()
+for particle in particle_array:
+    plt.plot(particle.r[0],particle.r[1],'k.')
+plt.show()
+```
+
+```python
+
+v_random = np.random.randint(0, 2)
+print(v_random)
+
+
 ```
 
 Onze simulaties worden snel “zwaar”. Er moeten veel berekeningen gedaan worden en dat kost nu eenmaal tijd. Nu is het wel zo dat sommige berekeningen meer tijd kosten dan anderen. Om te kijken of een stukje code geoptimaliseerd kan worden, moeten we een timer maken. Dat kan met onderstaande code:
@@ -238,18 +270,35 @@ Onze simulaties worden snel “zwaar”. Er moeten veel berekeningen gedaan word
 import time
 import numpy as np
 
+array = []
 start = time.time()
 
-array = np.array([])
 N = int(1e5)
 
 for i in range(N):
     array = np.append(array,np.random.rand(1))
 
 eind = time.time()
-lengte = eind - start
+lengte1 = eind - start
 
-print("Dit kostte ", lengte, "seconde!")
+print("Dit kostte ", lengte1, "seconde!")
+```
+
+```python
+import time
+import numpy as np
+
+
+start = time.time()
+N = int(1e5)
+array = np.random.rand(N)
+eind = time.time()
+lengte2 = eind - start
+
+print("Dit kostte ", lengte2, "seconde!")
+
+verschil = lengte1 - lengte2
+print('Verschil is: ',verschil)
 ```
 
 Idealiter draaien we de bovenstaande code een aantal keer zodat we een goede schatting hebben van de rekentijd.
@@ -268,7 +317,7 @@ Met de MyST extentie in jupyterlab kun je gebruik maken van [eval](https://mystm
 ```
 
 ```{solution} ex-intro-3
-De runtime is {eval}`<naam variabele>` korter.
+De runtime is {eval}`verschil` korter.
 ```
 
 ```python
