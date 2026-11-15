@@ -187,6 +187,7 @@ print("Hoe een eigenschap (in dit geval: 'r') van het element van het array erui
 Gegeven bovenstaande particles die je hebt aangemaakt, hoe zien de posities er dan uit van die deeltjes?
 Voorspel en controleer vervolgens met onderstaande code.
 ```
+4 deeltjes met x-posities 0,1,2,3 en y-posities 0.
 
 ```python
 import numpy as np
@@ -238,6 +239,39 @@ En als je wilt gaan voor een uitdaging:
 
 ```python
 ### YOUR CODE HERE ###
+class DeeltjesClass:
+    def __init__(self,m,v,r,R):
+        self.m = m
+        self.v = np.array(v,dtype=float)
+        self.r = np.array(r,dtype=float)
+        self.R = np.array(R,dtype=float)
+
+    def update_positie(self,dt):
+        self.r = self.r + self.v*dt
+        
+
+deeltjes_array = []
+for start_x in range(0,4):
+    deeltjes_array.append(DeeltjesClass(m=1.0,v=np.random.uniform(-5,5,size=2),r=[start_x,0],R=1.0))
+
+for i, deeltje in enumerate(deeltjes_array):
+    print(f"Deeltje {i}:")
+    print("Massa:", deeltje.m)
+    print("Snelheid:", deeltje.v)
+    print("Positie:", deeltje.r)
+    print("Straal:", deeltje.R)
+    print()
+
+for deeltje in deeltjes_array:
+    deeltje.update_positie(0.1)
+
+for i, deeltje in enumerate(deeltjes_array):
+    print(f"Deeltje {i}:")
+    print("Massa:", deeltje.m)
+    print("Snelheid:", deeltje.v)
+    print("Positie:", deeltje.r)
+    print("Straal:", deeltje.R)
+    print()
 ```
 
 Onze simulaties worden snel “zwaar”. Er moeten veel berekeningen gedaan worden en dat kost nu eenmaal tijd. Nu is het wel zo dat sommige berekeningen meer tijd kosten dan anderen. Om te kijken of een stukje code geoptimaliseerd kan worden, moeten we een timer maken. Dat kan met onderstaande code:
