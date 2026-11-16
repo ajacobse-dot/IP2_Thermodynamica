@@ -1,7 +1,3 @@
-```python
-print('Test aanpassing in notebook')
-```
-
 # NB 1: Deeltjesmodel
 
 
@@ -81,7 +77,6 @@ plt.plot(t,x_1,'r.', markersize=1, label='fietser 1')
 plt.plot(t,x_2,'b.', markersize=1, label='fietser 2')
 
 plt.show()
-print(x_2[-1])
 
 ```
 
@@ -178,7 +173,7 @@ for start_x in range(4):
 
 print("Hoe het array eruit ziet volgens python: " + str(particle_array))
 print("Hoe een element van het array eruit ziet volgens python: " + str(particle_array[0]))
-print("Hoe een eigenschap (in dit geval: 'r') van het element van het array eruit ziet volgens python: " + str(particle_array[0].r))
+print("Hoe een eigenschap (in dit geval: 'r') van het eerste element van het array eruit ziet volgens python: " + str(particle_array[0].r))
 ```
 
 ```{exercise} Voorspel
@@ -251,27 +246,22 @@ class DeeltjesClass:
         
 
 deeltjes_array = []
-for start_x in range(0,4):
-    deeltjes_array.append(DeeltjesClass(m=1.0,v=np.random.uniform(-5,5,size=2),r=[start_x,0],R=1.0))
+for start_x in range(0,10):
+    deeltjes_array.append(DeeltjesClass(m=1.0,v=[np.random.uniform(-5,5),1],r=[start_x,0],R=1.0))
 
-for i, deeltje in enumerate(deeltjes_array):
-    print(f"Deeltje {i}:")
-    print("Massa:", deeltje.m)
-    print("Snelheid:", deeltje.v)
-    print("Positie:", deeltje.r)
-    print("Straal:", deeltje.R)
-    print()
+plt.figure()
+for deeltje in deeltjes_array:
+    plt.plot(deeltje.r[0],deeltje.r[1],'o')
 
 for deeltje in deeltjes_array:
     deeltje.update_positie(0.1)
 
-for i, deeltje in enumerate(deeltjes_array):
-    print(f"Deeltje {i}:")
-    print("Massa:", deeltje.m)
-    print("Snelheid:", deeltje.v)
-    print("Positie:", deeltje.r)
-    print("Straal:", deeltje.R)
-    print()
+for deeltje in deeltjes_array:
+    plt.plot(deeltje.r[0],deeltje.r[1],'o')
+
+plt.xlim(-1,10)
+plt.ylim(-0.1,1)
+plt.figure()
 ```
 
 Onze simulaties worden snel “zwaar”. Er moeten veel berekeningen gedaan worden en dat kost nu eenmaal tijd. Nu is het wel zo dat sommige berekeningen meer tijd kosten dan anderen. Om te kijken of een stukje code geoptimaliseerd kan worden, moeten we een timer maken. Dat kan met onderstaande code:
@@ -292,6 +282,18 @@ eind = time.time()
 lengte = eind - start
 
 print("Dit kostte ", lengte, "seconde!")
+
+start = time.time()
+
+array = np.array([])
+N = int(1e5)
+
+array = np.append(array,np.random.rand(N))
+
+eind = time.time()
+lengte_2 = eind - start
+x=round(lengte/lengte_2)
+print("Manier 2 kostte ",lengte_2, "seconde, dat is",x,'keer korter')
 ```
 
 Idealiter draaien we de bovenstaande code een aantal keer zodat we een goede schatting hebben van de rekentijd.
@@ -310,7 +312,7 @@ Met de MyST extentie in jupyterlab kun je gebruik maken van [eval](https://mystm
 ```
 
 ```{solution} ex-intro-3
-De runtime is {eval}`<naam variabele>` korter.
+De runtime is {eval}`x` korter.
 ```
 
 ```python
@@ -449,6 +451,8 @@ def init():
 def update(frame):
     particle.update_position()
     dot.set_data([particle.r[0]], [particle.r[1]])
+    if particle.r[0]>=10 or particle.r[0]<=-10:
+        particle.v[0]=-particle.v[0]
     return dot,
 
 # Create animation
@@ -474,7 +478,8 @@ Controleer je eigen antwoord door de functie hierboven even te vervangen door de
 def update(frame):
     particle.update_position()
     dot.set_data([particle.r[0]], [particle.r[1]])
-### YOUR CODE HERE ###
+    if particle.r[0]>10:
+        particle.r[0]=-10
     return dot,         
 ```
 
@@ -490,7 +495,8 @@ Test wederom je code door de vernieuwde functie hierboven te plakken.
 def update(frame):
     particle.update_position()
     dot.set_data([particle.r[0]], [particle.r[1]])
-### YOUR CODE HERE ###
+    if particle.r[0]>=10 or particle.r[0]<=-10:
+        particle.v[0]=-particle.v[0]
     return dot,
 ```
 
@@ -505,7 +511,7 @@ Verander nu de code zodanig dat de beginsnelheid gegeven wordt door $\vec{v}=5\h
 dt = 0.1         # time step
 num_steps = 500  # number of time steps
 
-### YOUR CODE HERE ###
+particle = ParticleClass(m=1.0, v=[5.0, 3.0], r=[0.0, 0.0],R=1.0) 
 
 # Create the figure and axis
 fig, ax = plt.subplots()
@@ -528,7 +534,11 @@ def init():
 def update(frame):
     particle.update_position()
     dot.set_data([particle.r[0]], [particle.r[1]])
-    ### YOUR CODE HERE ###
+    if particle.r[0]>=9.5 or particle.r[0]<=-9.5:
+        particle.v[0]=-particle.v[0]
+    if particle.r[1]>=9.5 or particle.r[1]<=-9.5:
+        particle.v[1]=-particle.v[1]
+    
     return dot,
 
 # Create animation
@@ -570,12 +580,24 @@ class ParticleClass:
 
 
 ```python
+class ParticleClass:
+    def __init__(self, m, v, r, R):
+        self.m = m                         # mass of the particle
+        self.v = np.array(v, dtype=float)  # velocity vector
+        self.r = np.array(r, dtype=float)  # position vector
+        self.R = R                         # radius of the particle
 
+    def update_position(self):
+        self.r += self.v * dt
+    
+    def update_velocity(self, a):
+        self.v += a*dt
+        
 # Simulation parameters
 dt = 0.1         # time step
 num_steps = 500  # number of time steps
 particle = ParticleClass(m=1.0, v=[5.0, 0], r=[0.0, 0.0],R=1.0)  
-### YOUR CODE HERE ###
+a=np.array([0,-9.81])
 # Create the figure and axis
 fig, ax = plt.subplots()
 ax.set_xlim(-10, 10)
@@ -597,9 +619,12 @@ def init():
 def update(frame):
     particle.update_velocity(a)
     particle.update_position()
-    
     dot.set_data([particle.r[0]], [particle.r[1]])
-    ### YOUR CODE HERE ###
+    if particle.r[0]>=10 or particle.r[0]<=-10:
+        particle.v[0]=-particle.v[0]
+    if particle.r[1]>=10 or particle.r[1]<=-10:
+        particle.v[1]=-particle.v[1]
+    
     return dot,
 
 # Create animation
@@ -619,7 +644,7 @@ Herinner wat we in Q1 hebben gedaan bij de basics van een numerieke simulatie...
 ```
 
 ```{solution} ex-deeltjesmodel-6
-Jouw antwoord hier...
+Het behoud van energie geldt in de simulatie niet, het deeltje komt steeds lager in de doos terecht
 ```
 
 Een optie om de simulatie te verbeteren is de tijdstap $\Delta t$ kleiner te maken, maar dan hebben we ook meer geduld meer nodig - het aantal berekeningen schaalt met $\frac{1}{\Delta t}$. Een tweede optie is een meer directe oplossing: We weten dat $a = \mathrm{const.}$ en daarom weten we ook de bewegingsvergelijking van het deeltje!
@@ -706,7 +731,7 @@ Maak de code hieronder voor twee deeltjes die bewegen in een afgesloten doos. Be
 dt = 0.1         # time step
 num_steps = 500  # number of time steps
 particleA = ParticleClass(m=1.0, v=[0, 0], r=[0.0, 0.0],R=1.0)  
-### YOUR CODE HERE ###
+particleB = ParticleClass(m=1.0, v=[2, 0], r=[0.0, 0.0],R=1.0)
 
 track_x = []
 track_y = []
@@ -732,10 +757,11 @@ def init():
 
 # Update function for each frame
 def update(frame):
-    particleA.update_position()
     particleA.update_velocity(a)
+    particleA.update_position()
 
-### YOUR CODE HERE ###
+    particleB.update_velocity(a) 
+    particleB.update_position()
 
     track_x.append(particleA.r[0])
     track_y.append(particleA.r[1])
@@ -781,7 +807,8 @@ Nu je een beetje weet hoe een numeriek model werkt, hoe je boundaries kunt opgev
 ```
 
 ```{solution} ex-deeltjes_10
-Jouw antwoord.
+1. Als de afstand tussen r1 en r2 = / < dan 2*R
+2. 
 ```
 
 ```python tags=["NB1_botsingsvoorwaarde"]
@@ -799,7 +826,9 @@ class ParticleClass:
         self.r += self.v * dt  
 
     def collide_detection(self, other):
-        ### YOUR CODE HERE ###
+        dx = self.r[0] - other.r[0]
+        dy= self.r[0] - other.r[0]
+        rr=self.R + other.R
         return  dx**2+dy**2 < rr**2 
 ```
 
@@ -851,7 +880,10 @@ def update(frame):
 
     # botsing tussen de deeltjes onderling
     if particleA.collide_detection(particleB):
-        ### YOUR CODE HERE ###
+        particleA.v[0]=-particleA.v[0]
+        particleA.v[1]=-particleA.v[1]
+        particleB.v[0]=-particleB.v[0]
+        particleB.v[1]=-particleB.v[1]
 
 
     # botsing met de wand
@@ -953,10 +985,10 @@ class ParticleClass:
         return np.linalg.norm(self.r - other.r) <= (self.R + other.R)
 
 # Simulation parameters
-dt = 0.1         # time step
-num_steps = 530  # number of time steps
+dt = 0.1        # time step
+num_steps = 1000  # number of time steps
 m1 = 1.0
-m2 = 1.0
+m2 = 50
 
 particleA = ParticleClass(m=m1, v=[0, 0], r=[-4.0, 0.0],R=0.45)  
 particleB = ParticleClass(m=m2, v=[-1, 0], r=[-2.0, 0.0],R=0.45)  
@@ -1005,22 +1037,22 @@ def update(frame):
         vB_new = vB - 2 * mA / (mA + mB) * np.dot(vB - vA, rB - rA) / (1e-12+np.linalg.norm(rB - rA))**2 * (rB - rA)
         particleA.v = vA_new
         particleB.v = vB_new
-        ### YOUR CODE HERE ###
+        counter+=1
 
 
     # wall collision detection and response
-    if particleA.r[0]**2>100: # Check if particle is outside the bounds, np.abs could be used but is slower
+    if particleA.r[0]**2>9.55**2: # Check if particle is outside the bounds, np.abs could be used but is slower
         particleA.v[0] = -particleA.v[0]
-        ### YOUR CODE HERE ###
-    if particleA.r[1]**2>100: 
+        counter+=1
+    if particleA.r[1]**2>9.55**2: 
         particleA.v[1] = -particleA.v[1]
-        ### YOUR CODE HERE ###
+        counter+=1
 
     dot.set_data([particleB.r[0]], [particleB.r[1]])
-    if particleB.r[0]**2>100: 
+    if particleB.r[0]**2>9.55**2: 
         particleB.v[0] = -particleB.v[0]
 
-    if particleB.r[1]**2>100: 
+    if particleB.r[1]**2>9.55**2: 
         particleB.v[1] = -particleB.v[1]
 
     return dot, counter_text
@@ -1039,8 +1071,7 @@ Pas de bovenstaande code aan zodat $m_1 = 1$ en $m_2 = 50$. Run de code en geef 
 
 
 ```python tags=["NB1_eindantwoord"]
-#num_botsingen = ...
-### YOUR CODE HERE ###
+#num_botsingen = 21
 ```
 
 ```{exercise}
