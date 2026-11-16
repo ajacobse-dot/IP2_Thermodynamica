@@ -452,10 +452,16 @@ def init():
     dot.set_data([], [])
     return dot,
 
-# Update function for each frame
+# harde wanden
 def update(frame):
     particle.update_position()
     dot.set_data([particle.r[0]], [particle.r[1]])
+
+    if particle.r[0] == 10:
+        particle.v[0] = -particle.v[0]
+    elif particle.r[0] == -10:
+        particle.v[0] = -particle.v[0]
+    
     return dot,
 
 # Create animation
@@ -481,8 +487,15 @@ Controleer je eigen antwoord door de functie hierboven even te vervangen door de
 def update(frame):
     particle.update_position()
     dot.set_data([particle.r[0]], [particle.r[1]])
-### YOUR CODE HERE ###
+
+    if particle.r[0] > 10:
+        particle.r[0] = -10
     return dot,         
+```
+
+```python
+print(particle.R)
+
 ```
 
 ```{exercise} Harde wanden
@@ -497,7 +510,12 @@ Test wederom je code door de vernieuwde functie hierboven te plakken.
 def update(frame):
     particle.update_position()
     dot.set_data([particle.r[0]], [particle.r[1]])
-### YOUR CODE HERE ###
+
+    if particle.r[0] == 10:
+        particle.v[0] = -particle.v[0]
+    elif particle.r[0] == -10:
+        particle.v[0] = -particle.v[0]
+    
     return dot,
 ```
 
@@ -512,7 +530,7 @@ Verander nu de code zodanig dat de beginsnelheid gegeven wordt door $\vec{v}=5\h
 dt = 0.1         # time step
 num_steps = 500  # number of time steps
 
-### YOUR CODE HERE ###
+particle = ParticleClass(m=1.0, v=[5.0, 3.0], r=[0.0, 0.0],R=1.0)  
 
 # Create the figure and axis
 fig, ax = plt.subplots()
@@ -535,7 +553,17 @@ def init():
 def update(frame):
     particle.update_position()
     dot.set_data([particle.r[0]], [particle.r[1]])
-    ### YOUR CODE HERE ###
+    
+    if particle.r[0] < -(10-particle.R):
+        particle.v[0] = -particle.v[0]
+    elif particle.r[0] > (10-particle.R):
+        particle.v[0] = -particle.v[0]
+
+    if particle.r[1] < -(10-particle.R):
+        particle.v[1] = -particle.v[1]
+    elif particle.r[1] > (10-particle.R):
+        particle.v[1] = -particle.v[1]
+    
     return dot,
 
 # Create animation
@@ -577,12 +605,27 @@ class ParticleClass:
 
 
 ```python
+# Maken van de class met versnelling
+class ParticleClass:
+    def __init__(self, m, v, r, R):
+        self.m = m                         # mass of the particle
+        self.v = np.array(v, dtype=float)  # velocity vector
+        self.r = np.array(r, dtype=float)  # position vector
+        self.R = R                         # radius of the particle
+
+    def update_position(self):
+        self.r += self.v * dt
+    
+    def update_velocity(self, a):
+        self.v += a*dt
 
 # Simulation parameters
 dt = 0.1         # time step
 num_steps = 500  # number of time steps
 particle = ParticleClass(m=1.0, v=[5.0, 0], r=[0.0, 0.0],R=1.0)  
-### YOUR CODE HERE ###
+a = np.array([0, -9.81])
+
+
 # Create the figure and axis
 fig, ax = plt.subplots()
 ax.set_xlim(-10, 10)
@@ -605,8 +648,31 @@ def update(frame):
     particle.update_velocity(a)
     particle.update_position()
     
+    
+    
+    # Grenswaarden op basis van de schermgrenzen (-10 tot 10) en de straal van de bal (R)
+    min_limit = -10 + particle.R
+    max_limit = 10 - particle.R
+    restitution = 0.8  # Energieverlies bij botsing (80% behouden)
+
+    # X-as botsingen
+    if particle.r[0] <= min_limit:
+        particle.r[0] = min_limit       # Forceer positie op de rand (geen tunneling)
+        particle.v[0] = -particle.v[0] * restitution
+    elif particle.r[0] >= max_limit:
+        particle.r[0] = max_limit
+        particle.v[0] = -particle.v[0] * restitution
+
+    # Y-as botsingen (bodem en plafond)
+    if particle.r[1] <= min_limit:
+        particle.r[1] = min_limit       # Dit voorkomt het 'zakken' door de bodem!
+        particle.v[1] = -particle.v[1] * restitution
+    elif particle.r[1] >= max_limit:
+        particle.r[1] = max_limit
+        particle.v[1] = -particle.v[1] * restitution
+
+
     dot.set_data([particle.r[0]], [particle.r[1]])
-    ### YOUR CODE HERE ###
     return dot,
 
 # Create animation
@@ -626,7 +692,7 @@ Herinner wat we in Q1 hebben gedaan bij de basics van een numerieke simulatie...
 ```
 
 ```{solution} ex-deeltjesmodel-6
-Jouw antwoord hier...
+Zelfs als de resistutiecoëfficient 1 is, gaat de bal minder hoog stuiteren. Dit kan natuurkundig niet, want we hebben geen weerstandskrachten of energieverlies erin geprogrammeerd. De reden dat de bal minder hoog stuitert komt doordat je rekent met een te grote dt, waardoor het fout gaat in de simulatie. 
 ```
 
 Een optie om de simulatie te verbeteren is de tijdstap $\Delta t$ kleiner te maken, maar dan hebben we ook meer geduld meer nodig - het aantal berekeningen schaalt met $\frac{1}{\Delta t}$. Een tweede optie is een meer directe oplossing: We weten dat $a = \mathrm{const.}$ en daarom weten we ook de bewegingsvergelijking van het deeltje!
@@ -713,10 +779,12 @@ Maak de code hieronder voor twee deeltjes die bewegen in een afgesloten doos. Be
 dt = 0.1         # time step
 num_steps = 500  # number of time steps
 particleA = ParticleClass(m=1.0, v=[0, 0], r=[0.0, 0.0],R=1.0)  
-### YOUR CODE HERE ###
+particleB = ParticleClass(m=1.0, v=[5.0,0], r=[0.0, 0.0], R = 1.0)
 
-track_x = []
-track_y = []
+track_x_A = []
+track_y_A = []
+track_x_B = []
+track_y_B = []
 
 # Create the figure and axis
 fig, ax = plt.subplots()
@@ -726,7 +794,8 @@ ax.set_aspect('equal')
 ax.set_title("Particle Animation")
 ax.set_xlabel("x")
 ax.set_ylabel("y")
-track_line, = ax.plot([], [], 'r--', linewidth=1)  
+track_line_A, = ax.plot([], [], 'r--', linewidth=1)
+track_line_B, = ax.plot([], [], 'b--', linewidth=1)
 
 # Create the particle as a red dot
 dotA, = ax.plot([], [], 'ro', markersize=10)
@@ -741,12 +810,18 @@ def init():
 def update(frame):
     particleA.update_position()
     particleA.update_velocity(a)
+    particleB.update_position()
+    particleB.update_velocity(a)
 
 ### YOUR CODE HERE ###
 
-    track_x.append(particleA.r[0])
-    track_y.append(particleA.r[1])
-    track_line.set_data(track_x, track_y)
+    track_x_A.append(particleA.r[0])
+    track_y_A.append(particleA.r[1])
+    track_line_A.set_data(track_x_A, track_y_A)
+
+    track_x_B.append(particleB.r[0])
+    track_y_B.append(particleB.r[1])
+    track_line_B.set_data(track_x_B, track_y_B)
     
     dotA.set_data([particleA.r[0]], [particleA.r[1]])
     dotB.set_data([particleB.r[0]], [particleB.r[1]])
@@ -762,7 +837,7 @@ def update(frame):
     if particleB.r[1]**2>100: 
         particleB.v[1] = -particleB.v[1]
 
-    return dot, track_line
+    return dot, track_line_A, track_line_B
 
 # Create animation
 ani = FuncAnimation(fig, update, frames=range(200), init_func=init, blit=True, interval=50)
@@ -788,7 +863,7 @@ Nu je een beetje weet hoe een numeriek model werkt, hoe je boundaries kunt opgev
 ```
 
 ```{solution} ex-deeltjes_10
-Jouw antwoord.
+1. \sqrt{(r_1_x - r_2_x)^2 + (r_1_y - r_2_y)^2} = 2R
 ```
 
 ```python tags=["NB1_botsingsvoorwaarde"]
@@ -806,8 +881,11 @@ class ParticleClass:
         self.r += self.v * dt  
 
     def collide_detection(self, other):
-        ### YOUR CODE HERE ###
+        dx, dy = self.r - other.r
+        rr = self.R + other.R
         return  dx**2+dy**2 < rr**2 
+
+
 ```
 
 ```python
@@ -818,9 +896,8 @@ num_steps = 200  # number of time steps
 particleA = ParticleClass(m=1.0, v=[2.5, 0], r=[-2.0, 0.0],R=0.45)  
 particleB = ParticleClass(m=1.0, v=[-1, 0], r=[0.0, 0.0],R=0.45)  
 
-track_x = []
-track_y = []
-
+track_x_A, track_y_A = [], []
+track_x_B, track_y_B = [], []
 
 # Creer de plot
 
@@ -832,7 +909,8 @@ ax.set_aspect('equal')
 ax.set_title("Particle Animation")
 ax.set_xlabel("x")
 ax.set_ylabel("y")
-track_line, = ax.plot([], [], 'r--', linewidth=1)  
+track_line_A, = ax.plot([], [], 'r--', linewidth=1)  
+track_line_B, = ax.plot([], [], 'b--', linewidth=1)  
 
 # Toon het deeltje als een rode stip
 dot, = ax.plot([], [], 'ro', markersize=10); # semicolon to suppress output
@@ -849,17 +927,20 @@ def update(frame):
     particleA.update_position()
     particleB.update_position()
 
-    track_x.append(particleA.r[0])
-    track_y.append(particleA.r[1])
-    track_line.set_data(track_x, track_y)
+    track_x_A.append(particleA.r[0])
+    track_y_A.append(particleA.r[1])
+    track_x_B.append(particleB.r[0])
+    track_y_B.append(particleB.r[1])
+    track_line_A.set_data(track_x_A, track_y_A)
+    track_line_B.set_data(track_x_B, track_y_B)
     
     dotA.set_data([particleA.r[0]], [particleA.r[1]])
     dotB.set_data([particleB.r[0]], [particleB.r[1]])
 
     # botsing tussen de deeltjes onderling
     if particleA.collide_detection(particleB):
-        ### YOUR CODE HERE ###
-
+        particleA.v[0] = -particleA.v[0]
+        particleB.v[0] = -particleB.v[0]
 
     # botsing met de wand
     if particleA.r[0]**2>100: 
@@ -873,7 +954,7 @@ def update(frame):
     if particleB.r[1]**2>100: 
         particleB.v[1] = -particleB.v[1]
 
-    return dot, track_line
+    return dot, track_line_A, track_line_B
 
 # Creeer animatie
 ani = FuncAnimation(fig, update, frames=range(num_steps), init_func=init, blit=True, interval=50)
