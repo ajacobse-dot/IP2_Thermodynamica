@@ -48,7 +48,20 @@ Als model gaan we uit van een deel van het volume van een fietsband die onder ee
 ```
 
 ```{solution} ex-recap-1
-### YOUR CODE HERE ###
+p*V = N*k_b*T
+
+V_molecuul = V/N = k_b*T/p
+
+T = 293 K
+
+k_b = 1.38*10^-23 J/K
+
+p = 1.0*10^6 Pa
+
+V_molecuul = 4.0334*10^-27 m^3
+
+V_molecuul = r^3
+r = 1.592 *10^-9 m
 ```
 
 De simulatie die we gaan maken bevat maar twee dimensies. We kunnen het oppervlak per deeltje in deze simulatie daarom kiezen als het zojuist berekende $V_\text{molecuul}^{2/3}$.
@@ -68,7 +81,24 @@ Ook deze heb je hierna nodig.
 ```
 
 ```{solution} ex-recap-2
-### YOUR CODE HERE ###
+
+$$\frac{1}{2}m \langle v^2 \rangle = \frac{2}{2}k_B T = k_B T$$
+
+$$\langle v^2 \rangle = \frac{2 k_B T}{m}$$
+
+De snelheid $v$ wordt dan:
+
+$$v = \sqrt{\frac{2 k_B T}{m}}$$
+
+Vul de bekende waarden in ($T = 293\text{ K}$, $k_B = 1{,}38 \times 10^{-23}\text{ J/K}$ en $m \approx 4{,}81 \times 10^{-26}\text{ kg}$):
+
+$$v = \sqrt{\frac{2 \times (1{,}38 \times 10^{-23}\text{ J/K}) \times 293\text{ K}}{4{,}81 \times 10^{-26}\text{ kg}}}$$
+
+$$v = \sqrt{\frac{8{,}0868 \times 10^{-21}}{4{,}81 \times 10^{-26}}} = \sqrt{168124{,}7}\text{ m/s}$$
+
+$$v \approx 410\text{ m/s} \approx 4 \times 10^2\text{ m/s}$$[cite: 2]
+
+Hiermee is aangetoond dat de snelheid van een gasmolecuul bij kamertemperatuur in twee dimensies ongeveer $4 \times 10^2\text{ m/s}$ bedraagt.
 ```
 
 ```{exercise} Radius
@@ -88,11 +118,11 @@ Bekijk de waarde van `DT`. Hoe zorgt deze waaarde ervoor dat het onwaarschijnlij
 Onze simulatie modelleert dus een klein systeem zonder rekening te houden met de kracht tussen de luchtmoleculen. Je zult zien dat we toch al behoorlijk wat van de processor vragen om deze berekeningen te doen. Om een meer realistische modelsimulatie te maken is daarom een serieuze uitdaging, die veel wiskunde en programmeerervaring vraagt. Op dit ogenblik wordt dit bijvoorbeeld gevraagd bij een van de eerste opdrachten van het vak 'Computational Physics' van de master Applied Physics. 
 
 ```python tags=["NB2_init"] editable=true slideshow={"slide_type": ""}
-BOX_SIZE_0 = 10                # Hoogte en lengte startvolume
-N = 40                         # Aantal deeltjes
-V_0 = 1                        # Startsnelheid van deeltjes
-RADIUS = 0.3                   # Straal van moleculen
-DT = 0.1 * RADIUS / V_0        # Tijdstap om geen botsing te missen
+BOX_SIZE_0 = 10                # Hoogte en lengte startvolume (m)
+N = 40                         # Aantal deeltjes ()
+V_0 = 1                        # Startsnelheid van deeltjes (m/s)
+RADIUS = 0.3                   # Straal van moleculen (m)
+DT = 0.1 * RADIUS / V_0        # Tijdstap om geen botsing te missen (s)
 ```
 
 ### Particle class
@@ -183,8 +213,7 @@ Leg uit dat d.m.v. onderstaande code de deeltjes allemaal dezelfde snelheid hebb
 ```
 
 ```{solution} ex-recap-5
-Jouw antwoord hier...
-### YOUR CODE HERE ###
+V_0 is constant, en bij de snelheden aanmaken is overal deze constante gebruikt om de snelheden van de deeltjes te bepalen. De randomness zorgt uiteindelijk alleen voor de richting. 
 ```
 
 ```python tags=["NB2_init"] editable=true slideshow={"slide_type": ""}
@@ -209,8 +238,7 @@ Leg uit hoe er in onderstaande code wordt voorkomen dat de botsing tussen twee d
 ```
 
 ```{solution} ex-recap-6
-Jouw antwoord hier...
-### YOUR CODE HERE ###
+Doordat de binnenste lus (j) altijd pas begint bij de index volgend op de buitenste lus (i + 1), wordt elk uniek paar deeltjes precies één keer met elkaar vergeleken.
 ```
 
 ```python editable=true slideshow={"slide_type": ""} tags=["NB2_init"]
@@ -318,7 +346,7 @@ energy_tot = []
 create_particles(particles)
 for i in range(100):
     take_time_step(particles)
-    # voeg de som van de kinetische energie in deze stap toe aan energy_tot 
+    #energy_tot.append(kin_energy)
     ### YOUR CODE HERE ###
 
 # plot de figuur van de kinetische energie als functie van de tijd. 
