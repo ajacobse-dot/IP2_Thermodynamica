@@ -78,7 +78,7 @@ Wat op zou kunnen vallen is dat de snelheid in een cel constant gehouden wordt (
 Maak het tijdsinterval $dt$ groter en vergelijk de afgelegde weg in de tien seconde. Wat gebeurt er met de afgelegde weg als we $dt$ groter maken? Is dat logisch vanuit gezien de natuurkunde? En gezien de methode van discretisatie? Leg uit.
 ```
 
-**De afgelegde weg blijft hetzelfde, wat je ook zou verwachten volgens natuurkunde. Het maakt niet uit hoeveel keer je meet, hij blijft dezelfde afgelegde weg houden. Volgens de methode van discretisatie verandert niks aan de constante versnelling, maar wel aan de grafiek van fietser 2 met de niet-constante versnelling. Dan wordt tussen elke tijdstap een constante versnelling aangehouden, maar dit wordt dus minder nauwkeurig hoe groter dt is.**
+**De afgelegde weg verandert. Bij een grotere dt wordt de afgelegde weg ook groter. Volgens de methode van discretisatie verandert niks aan de constante versnelling, maar wel aan de grafiek van fietser 2 met de niet-constante versnelling. Dan wordt tussen elke tijdstap een constante versnelling aangehouden, maar dit wordt dus minder nauwkeurig hoe groter dt is.**
 
 
 <!-- Jouw antwoord hier  -->
@@ -650,26 +650,25 @@ def update(frame):
     
     
     
-    # Grenswaarden op basis van de schermgrenzen (-10 tot 10) en de straal van de bal (R)
+    
     min_limit = -10 + particle.R
     max_limit = 10 - particle.R
-    restitution = 0.8  # Energieverlies bij botsing (80% behouden)
 
-    # X-as botsingen
+    # X
     if particle.r[0] <= min_limit:
-        particle.r[0] = min_limit       # Forceer positie op de rand (geen tunneling)
-        particle.v[0] = -particle.v[0] * restitution
+        particle.r[0] = min_limit       
+        particle.v[0] = -particle.v[0]
     elif particle.r[0] >= max_limit:
         particle.r[0] = max_limit
-        particle.v[0] = -particle.v[0] * restitution
+        particle.v[0] = -particle.v[0]
 
-    # Y-as botsingen (bodem en plafond)
+    # Y
     if particle.r[1] <= min_limit:
-        particle.r[1] = min_limit       # Dit voorkomt het 'zakken' door de bodem!
-        particle.v[1] = -particle.v[1] * restitution
+        particle.r[1] = min_limit       
+        particle.v[1] = -particle.v[1]
     elif particle.r[1] >= max_limit:
         particle.r[1] = max_limit
-        particle.v[1] = -particle.v[1] * restitution
+        particle.v[1] = -particle.v[1]
 
 
     dot.set_data([particle.r[0]], [particle.r[1]])
@@ -692,7 +691,7 @@ Herinner wat we in Q1 hebben gedaan bij de basics van een numerieke simulatie...
 ```
 
 ```{solution} ex-deeltjesmodel-6
-Zelfs als de resistutiecoëfficient 1 is, gaat de bal minder hoog stuiteren. Dit kan natuurkundig niet, want we hebben geen weerstandskrachten of energieverlies erin geprogrammeerd. De reden dat de bal minder hoog stuitert komt doordat je rekent met een te grote dt, waardoor het fout gaat in de simulatie. 
+De bal gaat minder hoog stuiteren. Dit kan natuurkundig niet, want we hebben geen weerstandskrachten of energieverlies erin geprogrammeerd. De reden dat de bal minder hoog stuitert komt doordat je rekent met een te grote dt, waardoor het fout gaat in de simulatie. 
 ```
 
 Een optie om de simulatie te verbeteren is de tijdstap $\Delta t$ kleiner te maken, maar dan hebben we ook meer geduld meer nodig - het aantal berekeningen schaalt met $\frac{1}{\Delta t}$. Een tweede optie is een meer directe oplossing: We weten dat $a = \mathrm{const.}$ en daarom weten we ook de bewegingsvergelijking van het deeltje!
@@ -812,8 +811,6 @@ def update(frame):
     particleA.update_velocity(a)
     particleB.update_position()
     particleB.update_velocity(a)
-
-### YOUR CODE HERE ###
 
     track_x_A.append(particleA.r[0])
     track_y_A.append(particleA.r[1])
