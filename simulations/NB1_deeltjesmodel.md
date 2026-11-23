@@ -46,7 +46,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Beginwaarden
-dt = 1      #s
+dt = 0.1                 #s
 t_e = 10                   #s
 N = int(t_e/dt)+1
 t = np.arange(0,t_e+dt,dt) #s
@@ -63,6 +63,7 @@ a_2 = .5                   #m/s^2
 # Uitvoeren van de simulatie
 for i in range(0,N-1):
     x_1[i+1] = x_1[i] + v_1*dt
+
     
     x_2[i+1] = x_2[i] + v_2[i]*dt
     v_2[i+1] = v_2[i] + a_2*dt
@@ -80,10 +81,13 @@ plt.show()
 
 ```
 
+**De afgelegde weg blijft hetzelfde, wat je ook zou verwachten volgens natuurkunde. Het maakt niet uit hoeveel keer je meet, hij blijft dezelfde afgelegde weg houden. Volgens de methode van discretisatie verandert niks aan de constante versnelling, maar wel aan de grafiek van fietser 2 met de niet-constante versnelling. Dan wordt tussen elke tijdstap een constante versnelling aangehouden, maar dit wordt dus minder nauwkeurig hoe groter dt is.**
+
+
 <!-- Jouw antwoord hier  -->
 
 ```python
-%reset -f
+%reset -f 
 ```
 
 ## Naar een deeltjesmodel
@@ -99,6 +103,8 @@ Een *class* is een blauwdruk voor het creëren van objecten (zoals deeltjes, ato
 # Merk op dat de class zelf geen deeltje is! 
 # Een object dat tot een bepaalde class behoort, wordt een instant van die class genoemd. 
 # Je kunt meerdere instants van een class hebben.
+import numpy as np
+import matplotlib.pyplot as plt
 
 class ParticleClass:
     def __init__(self, m, v, r, R):
@@ -270,16 +276,16 @@ Onze simulaties worden snel “zwaar”. Er moeten veel berekeningen gedaan word
 import time
 import numpy as np
 
+array = []
 start = time.time()
 
-array = np.array([])
 N = int(1e5)
 
 for i in range(N):
     array = np.append(array,np.random.rand(1))
 
 eind = time.time()
-lengte = eind - start
+lengte1 = eind - start
 
 print("Dit kostte ", lengte, "seconde!")
 
@@ -447,7 +453,7 @@ def init():
     dot.set_data([], [])
     return dot,
 
-# Update function for each frame
+# harde wanden
 def update(frame):
     particle.update_position()
     dot.set_data([particle.r[0]], [particle.r[1]])
@@ -478,9 +484,15 @@ Controleer je eigen antwoord door de functie hierboven even te vervangen door de
 def update(frame):
     particle.update_position()
     dot.set_data([particle.r[0]], [particle.r[1]])
-    if particle.r[0]>10:
-        particle.r[0]=-10
+
+    if particle.r[0] > 10:
+        particle.r[0] = -10
     return dot,         
+```
+
+```python
+print(particle.R)
+
 ```
 
 ```{exercise} Harde wanden
@@ -580,6 +592,7 @@ class ParticleClass:
 
 
 ```python
+# Maken van de class met versnelling
 class ParticleClass:
     def __init__(self, m, v, r, R):
         self.m = m                         # mass of the particle
@@ -592,12 +605,20 @@ class ParticleClass:
     
     def update_velocity(self, a):
         self.v += a*dt
+
+    def update_position(self):
+        self.r += self.v * dt
+    
+    def update_velocity(self, a):
+        self.v += a*dt
         
 # Simulation parameters
 dt = 0.1         # time step
 num_steps = 500  # number of time steps
 particle = ParticleClass(m=1.0, v=[5.0, 0], r=[0.0, 0.0],R=1.0)  
-a=np.array([0,-9.81])
+a = np.array([0, -9.81])
+
+
 # Create the figure and axis
 fig, ax = plt.subplots()
 ax.set_xlim(-10, 10)
@@ -619,12 +640,32 @@ def init():
 def update(frame):
     particle.update_velocity(a)
     particle.update_position()
-    dot.set_data([particle.r[0]], [particle.r[1]])
-    if particle.r[0]>=10 or particle.r[0]<=-10:
-        particle.v[0]=-particle.v[0]
-    if particle.r[1]>=10 or particle.r[1]<=-10:
-        particle.v[1]=-particle.v[1]
     
+    
+    
+    # Grenswaarden op basis van de schermgrenzen (-10 tot 10) en de straal van de bal (R)
+    min_limit = -10 + particle.R
+    max_limit = 10 - particle.R
+    restitution = 0.8  # Energieverlies bij botsing (80% behouden)
+
+    # X-as botsingen
+    if particle.r[0] <= min_limit:
+        particle.r[0] = min_limit       # Forceer positie op de rand (geen tunneling)
+        particle.v[0] = -particle.v[0] * restitution
+    elif particle.r[0] >= max_limit:
+        particle.r[0] = max_limit
+        particle.v[0] = -particle.v[0] * restitution
+
+    # Y-as botsingen (bodem en plafond)
+    if particle.r[1] <= min_limit:
+        particle.r[1] = min_limit       # Dit voorkomt het 'zakken' door de bodem!
+        particle.v[1] = -particle.v[1] * restitution
+    elif particle.r[1] >= max_limit:
+        particle.r[1] = max_limit
+        particle.v[1] = -particle.v[1] * restitution
+
+
+    dot.set_data([particle.r[0]], [particle.r[1]])
     return dot,
 
 # Create animation
@@ -731,10 +772,12 @@ Maak de code hieronder voor twee deeltjes die bewegen in een afgesloten doos. Be
 dt = 0.1         # time step
 num_steps = 500  # number of time steps
 particleA = ParticleClass(m=1.0, v=[0, 0], r=[0.0, 0.0],R=1.0)  
-particleB = ParticleClass(m=1.0, v=[2, 0], r=[0.0, 0.0],R=1.0)
+particleB = ParticleClass(m=1.0, v=[5.0,0], r=[0.0, 0.0], R = 1.0)
 
-track_x = []
-track_y = []
+track_x_A = []
+track_y_A = []
+track_x_B = []
+track_y_B = []
 
 # Create the figure and axis
 fig, ax = plt.subplots()
@@ -744,7 +787,8 @@ ax.set_aspect('equal')
 ax.set_title("Particle Animation")
 ax.set_xlabel("x")
 ax.set_ylabel("y")
-track_line, = ax.plot([], [], 'r--', linewidth=1)  
+track_line_A, = ax.plot([], [], 'r--', linewidth=1)
+track_line_B, = ax.plot([], [], 'b--', linewidth=1)
 
 # Create the particle as a red dot
 dotA, = ax.plot([], [], 'ro', markersize=10)
@@ -763,9 +807,13 @@ def update(frame):
     particleB.update_velocity(a) 
     particleB.update_position()
 
-    track_x.append(particleA.r[0])
-    track_y.append(particleA.r[1])
-    track_line.set_data(track_x, track_y)
+    track_x_A.append(particleA.r[0])
+    track_y_A.append(particleA.r[1])
+    track_line_A.set_data(track_x_A, track_y_A)
+
+    track_x_B.append(particleB.r[0])
+    track_y_B.append(particleB.r[1])
+    track_line_B.set_data(track_x_B, track_y_B)
     
     dotA.set_data([particleA.r[0]], [particleA.r[1]])
     dotB.set_data([particleB.r[0]], [particleB.r[1]])
@@ -781,7 +829,7 @@ def update(frame):
     if particleB.r[1]**2>100: 
         particleB.v[1] = -particleB.v[1]
 
-    return dot, track_line
+    return dot, track_line_A, track_line_B
 
 # Create animation
 ani = FuncAnimation(fig, update, frames=range(200), init_func=init, blit=True, interval=50)
@@ -807,8 +855,7 @@ Nu je een beetje weet hoe een numeriek model werkt, hoe je boundaries kunt opgev
 ```
 
 ```{solution} ex-deeltjes_10
-1. Als de afstand tussen r1 en r2 = / < dan 2*R
-2. 
+1. \sqrt{(r_1_x - r_2_x)^2 + (r_1_y - r_2_y)^2} = 2R
 ```
 
 ```python tags=["NB1_botsingsvoorwaarde"]
@@ -826,10 +873,11 @@ class ParticleClass:
         self.r += self.v * dt  
 
     def collide_detection(self, other):
-        dx = self.r[0] - other.r[0]
-        dy= self.r[0] - other.r[0]
-        rr=self.R + other.R
+        dx, dy = self.r - other.r
+        rr = self.R + other.R
         return  dx**2+dy**2 < rr**2 
+
+
 ```
 
 ```python
@@ -840,9 +888,8 @@ num_steps = 200  # number of time steps
 particleA = ParticleClass(m=1.0, v=[2.5, 0], r=[-2.0, 0.0],R=0.45)  
 particleB = ParticleClass(m=1.0, v=[-1, 0], r=[0.0, 0.0],R=0.45)  
 
-track_x = []
-track_y = []
-
+track_x_A, track_y_A = [], []
+track_x_B, track_y_B = [], []
 
 # Creer de plot
 
@@ -854,7 +901,8 @@ ax.set_aspect('equal')
 ax.set_title("Particle Animation")
 ax.set_xlabel("x")
 ax.set_ylabel("y")
-track_line, = ax.plot([], [], 'r--', linewidth=1)  
+track_line_A, = ax.plot([], [], 'r--', linewidth=1)  
+track_line_B, = ax.plot([], [], 'b--', linewidth=1)  
 
 # Toon het deeltje als een rode stip
 dot, = ax.plot([], [], 'ro', markersize=10); # semicolon to suppress output
@@ -871,9 +919,12 @@ def update(frame):
     particleA.update_position()
     particleB.update_position()
 
-    track_x.append(particleA.r[0])
-    track_y.append(particleA.r[1])
-    track_line.set_data(track_x, track_y)
+    track_x_A.append(particleA.r[0])
+    track_y_A.append(particleA.r[1])
+    track_x_B.append(particleB.r[0])
+    track_y_B.append(particleB.r[1])
+    track_line_A.set_data(track_x_A, track_y_A)
+    track_line_B.set_data(track_x_B, track_y_B)
     
     dotA.set_data([particleA.r[0]], [particleA.r[1]])
     dotB.set_data([particleB.r[0]], [particleB.r[1]])
@@ -898,7 +949,7 @@ def update(frame):
     if particleB.r[1]**2>100: 
         particleB.v[1] = -particleB.v[1]
 
-    return dot, track_line
+    return dot, track_line_A, track_line_B
 
 # Creeer animatie
 ani = FuncAnimation(fig, update, frames=range(num_steps), init_func=init, blit=True, interval=50)
@@ -958,11 +1009,11 @@ Voeg op de juiste plaats(en) een update van de counter toe (per botsing moet de 
 
 Controleer de uitspraak in de video dat $\pi$ in eens opduikt bij de massaverhouding. 
 
-Wat is de beperkende factor in ons script om het aantal botsingen als functie van de massaverhouding te onderzokeen?
+Wat is de beperkende factor in ons script om het aantal botsingen als functie van de massaverhouding te onderzoeken?
 ```
 
 ```{solution} ex-deeltjes-12
-Jouw antwoord
+Een te kleine tijdsstap in dit script. Hierdoor krijg je niet het juiste aantal botsingen dat je verwacht. Als je dt groter wilt maken, heb je meer rekenkracht nodig. 
 ```
 
 
@@ -1043,10 +1094,10 @@ def update(frame):
     # wall collision detection and response
     if particleA.r[0]**2>9.55**2: # Check if particle is outside the bounds, np.abs could be used but is slower
         particleA.v[0] = -particleA.v[0]
-        counter+=1
-    if particleA.r[1]**2>9.55**2: 
+        counter += 1
+    if particleA.r[1]**2>100: 
         particleA.v[1] = -particleA.v[1]
-        counter+=1
+        counter += 1
 
     dot.set_data([particleB.r[0]], [particleB.r[1]])
     if particleB.r[0]**2>9.55**2: 
@@ -1058,7 +1109,7 @@ def update(frame):
     return dot, counter_text
 
 # Create animation
-ani = FuncAnimation(fig, update, frames=range(200), init_func=init, blit=True, interval=50)
+ani = FuncAnimation(fig, update, frames=range(400), init_func=init, blit=True, interval=50)
 
 # For Jupyter notebook:
 from IPython.display import HTML
@@ -1071,7 +1122,9 @@ Pas de bovenstaande code aan zodat $m_1 = 1$ en $m_2 = 50$. Run de code en geef 
 
 
 ```python tags=["NB1_eindantwoord"]
-#num_botsingen = 21
+num_botsingen = counter
+print(num_botsingen)
+
 ```
 
 ```{exercise}
