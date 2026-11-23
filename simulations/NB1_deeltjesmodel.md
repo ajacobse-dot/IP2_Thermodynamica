@@ -31,6 +31,16 @@ Wellicht heb je bovenstaande al eens gezien met het programma Coach. Anders dan 
 
 We nemen als voorbeeld twee fietsers, waarbij de fietser 1 een eenparige beweging uitvoert en fietser 2 een eenparig versnelde beweging:
 
+
+Wat op zou kunnen vallen is dat de snelheid in een cel constant gehouden wordt ($x_i = v_i\cdot\Delta t$), terwijl de snelheid tijdens het tijdsinterval $\Delta t$ toeneemt. De oplossing is dus een benadering van de exacte oplossing, maar door deze methode (Euler explicit forward), moeten we wel voorzichtig zijn met de grootte van het tijdsinterval.
+
+```{exercise}
+Maak het tijdsinterval $dt$ groter en vergelijk de afgelegde weg in de tien seconde. Wat gebeurt er met de afgelegde weg als we $dt$ groter maken? Is dat logisch vanuit gezien de natuurkunde? En gezien de methode van discretisatie? Leg uit.
+
+De afgelegde weg neemt af als we $dt$ groter maken. Vanuit de natuurkunde gezien is dit niet logisch omdat de afgelegde afstand alleen afhangt van de beginwaarden en dus niet van dt. Gezien de methode van discretisatie is het logisch omdat de snelheid ook in de tijdsintervallen toenemen maar hier wordt geen rekening mee gehouden waardoor de afgelegde afstand kleiner is dan de daadwerkelijke afstand.
+```
+
+
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
@@ -69,13 +79,6 @@ plt.plot(t,x_2,'b.', markersize=1, label='fietser 2')
 
 plt.show()
 
-
-```
-
-Wat op zou kunnen vallen is dat de snelheid in een cel constant gehouden wordt ($x_i = v_i\cdot\Delta t$), terwijl de snelheid tijdens het tijdsinterval $\Delta t$ toeneemt. De oplossing is dus een benadering van de exacte oplossing, maar door deze methode (Euler explicit forward), moeten we wel voorzichtig zijn met de grootte van het tijdsinterval.
-
-```{exercise}
-Maak het tijdsinterval $dt$ groter en vergelijk de afgelegde weg in de tien seconde. Wat gebeurt er met de afgelegde weg als we $dt$ groter maken? Is dat logisch vanuit gezien de natuurkunde? En gezien de methode van discretisatie? Leg uit.
 ```
 
 **De afgelegde weg verandert. Bij een grotere dt wordt de afgelegde weg ook groter. Volgens de methode van discretisatie verandert niks aan de constante versnelling, maar wel aan de grafiek van fietser 2 met de niet-constante versnelling. Dan wordt tussen elke tijdstap een constante versnelling aangehouden, maar dit wordt dus minder nauwkeurig hoe groter dt is.**
@@ -127,6 +130,7 @@ Laten we nu een ook echt een deeltje creëren en kijken wat we ermee kunnen doen
 
 ```python
 # een enkel deeltje:
+import numpy as np
 this_particle = ParticleClass(m=1.0, v=[5.0, 0], r=[0.0, 0.0], R=1.0)
 print(this_particle)
 ```
@@ -175,7 +179,7 @@ for start_x in range(4):
 
 print("Hoe het array eruit ziet volgens python: " + str(particle_array))
 print("Hoe een element van het array eruit ziet volgens python: " + str(particle_array[0]))
-print("Hoe een eigenschap (in dit geval: 'r') van het element van het array eruit ziet volgens python: " + str(particle_array[0].r))
+print("Hoe een eigenschap (in dit geval: 'r') van het eerste element van het array eruit ziet volgens python: " + str(particle_array[0].r))
 ```
 
 ```{exercise} Voorspel
@@ -184,7 +188,7 @@ print("Hoe een eigenschap (in dit geval: 'r') van het element van het array erui
 Gegeven bovenstaande particles die je hebt aangemaakt, hoe zien de posities er dan uit van die deeltjes?
 Voorspel en controleer vervolgens met onderstaande code.
 ```
-**In de array komt een particle te staan met de verschillende startposities 0 tm 3.**
+4 deeltjes met x-posities 0,1,2,3 en y-posities 0.
 
 ```python
 import numpy as np
@@ -235,33 +239,35 @@ En als je wilt gaan voor een uitdaging:
 ```
 
 ```python
-import random
-import numpy as np
-import matplotlib.pyplot as plt
+### YOUR CODE HERE ###
+class DeeltjesClass:
+    def __init__(self,m,v,r,R):
+        self.m = m
+        self.v = np.array(v,dtype=float)
+        self.r = np.array(r,dtype=float)
+        self.R = np.array(R,dtype=float)
 
-particle_array = []
+    def update_positie(self,dt):
+        self.r = self.r + self.v*dt
+        
 
-for start_x in range(11):
-    vx_random = np.random.randint(-5, 6)
-    particle_array.append(ParticleClass(m=1.0, v=[vx_random, 1], r=[start_x, 0.0],R=1.0))
-
-
-for particle, particle_object in enumerate(particle_array):
-    particle_object.update_position(1.0)
-    
+deeltjes_array = []
+for start_x in range(0,10):
+    deeltjes_array.append(DeeltjesClass(m=1.0,v=[np.random.uniform(-5,5),1],r=[start_x,0],R=1.0))
 
 plt.figure()
-for particle in particle_array:
-    plt.plot(particle.r[0],particle.r[1],'k.')
-plt.show()
-```
+for deeltje in deeltjes_array:
+    plt.plot(deeltje.r[0],deeltje.r[1],'o')
 
-```python
+for deeltje in deeltjes_array:
+    deeltje.update_positie(0.1)
 
-v_random = np.random.randint(0, 2)
-print(v_random)
+for deeltje in deeltjes_array:
+    plt.plot(deeltje.r[0],deeltje.r[1],'o')
 
-
+plt.xlim(-1,10)
+plt.ylim(-0.1,1)
+plt.figure()
 ```
 
 Onze simulaties worden snel “zwaar”. Er moeten veel berekeningen gedaan worden en dat kost nu eenmaal tijd. Nu is het wel zo dat sommige berekeningen meer tijd kosten dan anderen. Om te kijken of een stukje code geoptimaliseerd kan worden, moeten we een timer maken. Dat kan met onderstaande code:
@@ -281,24 +287,19 @@ for i in range(N):
 eind = time.time()
 lengte1 = eind - start
 
-print("Dit kostte ", lengte1, "seconde!")
-```
-
-```python
-import time
-import numpy as np
-
+print("Dit kostte ", lengte, "seconde!")
 
 start = time.time()
+
+array = np.array([])
 N = int(1e5)
-array = np.random.rand(N)
+
+array = np.append(array,np.random.rand(N))
+
 eind = time.time()
-lengte2 = eind - start
-
-print("Dit kostte ", lengte2, "seconde!")
-
-verschil = lengte1 - lengte2
-print('Verschil is: ',verschil)
+lengte_2 = eind - start
+x=round(lengte/lengte_2)
+print("Manier 2 kostte ",lengte_2, "seconde, dat is",x,'keer korter')
 ```
 
 Idealiter draaien we de bovenstaande code een aantal keer zodat we een goede schatting hebben van de rekentijd.
@@ -317,7 +318,7 @@ Met de MyST extentie in jupyterlab kun je gebruik maken van [eval](https://mystm
 ```
 
 ```{solution} ex-intro-3
-De runtime is {eval}`verschil` korter.
+De runtime is {eval}`x` korter.
 ```
 
 ```python
@@ -456,12 +457,8 @@ def init():
 def update(frame):
     particle.update_position()
     dot.set_data([particle.r[0]], [particle.r[1]])
-
-    if particle.r[0] == 10:
-        particle.v[0] = -particle.v[0]
-    elif particle.r[0] == -10:
-        particle.v[0] = -particle.v[0]
-    
+    if particle.r[0]>=10 or particle.r[0]<=-10:
+        particle.v[0]=-particle.v[0]
     return dot,
 
 # Create animation
@@ -510,12 +507,8 @@ Test wederom je code door de vernieuwde functie hierboven te plakken.
 def update(frame):
     particle.update_position()
     dot.set_data([particle.r[0]], [particle.r[1]])
-
-    if particle.r[0] == 10:
-        particle.v[0] = -particle.v[0]
-    elif particle.r[0] == -10:
-        particle.v[0] = -particle.v[0]
-    
+    if particle.r[0]>=10 or particle.r[0]<=-10:
+        particle.v[0]=-particle.v[0]
     return dot,
 ```
 
@@ -530,7 +523,7 @@ Verander nu de code zodanig dat de beginsnelheid gegeven wordt door $\vec{v}=5\h
 dt = 0.1         # time step
 num_steps = 500  # number of time steps
 
-particle = ParticleClass(m=1.0, v=[5.0, 3.0], r=[0.0, 0.0],R=1.0)  
+particle = ParticleClass(m=1.0, v=[5.0, 3.0], r=[0.0, 0.0],R=1.0) 
 
 # Create the figure and axis
 fig, ax = plt.subplots()
@@ -553,16 +546,10 @@ def init():
 def update(frame):
     particle.update_position()
     dot.set_data([particle.r[0]], [particle.r[1]])
-    
-    if particle.r[0] < -(10-particle.R):
-        particle.v[0] = -particle.v[0]
-    elif particle.r[0] > (10-particle.R):
-        particle.v[0] = -particle.v[0]
-
-    if particle.r[1] < -(10-particle.R):
-        particle.v[1] = -particle.v[1]
-    elif particle.r[1] > (10-particle.R):
-        particle.v[1] = -particle.v[1]
+    if particle.r[0]>=9.5 or particle.r[0]<=-9.5:
+        particle.v[0]=-particle.v[0]
+    if particle.r[1]>=9.5 or particle.r[1]<=-9.5:
+        particle.v[1]=-particle.v[1]
     
     return dot,
 
@@ -619,6 +606,12 @@ class ParticleClass:
     def update_velocity(self, a):
         self.v += a*dt
 
+    def update_position(self):
+        self.r += self.v * dt
+    
+    def update_velocity(self, a):
+        self.v += a*dt
+        
 # Simulation parameters
 dt = 0.1         # time step
 num_steps = 500  # number of time steps
@@ -691,7 +684,11 @@ Herinner wat we in Q1 hebben gedaan bij de basics van een numerieke simulatie...
 ```
 
 ```{solution} ex-deeltjesmodel-6
+<<<<<<< HEAD
 De bal gaat minder hoog stuiteren. Dit kan natuurkundig niet, want we hebben geen weerstandskrachten of energieverlies erin geprogrammeerd. De reden dat de bal minder hoog stuitert komt doordat je rekent met een te grote dt, waardoor het fout gaat in de simulatie. 
+=======
+Het behoud van energie geldt in de simulatie niet, het deeltje komt steeds lager in de doos terecht
+>>>>>>> 8e6f426cdd93f6c4381a7ab414d2e60cc96c5dd2
 ```
 
 Een optie om de simulatie te verbeteren is de tijdstap $\Delta t$ kleiner te maken, maar dan hebben we ook meer geduld meer nodig - het aantal berekeningen schaalt met $\frac{1}{\Delta t}$. Een tweede optie is een meer directe oplossing: We weten dat $a = \mathrm{const.}$ en daarom weten we ook de bewegingsvergelijking van het deeltje!
@@ -807,11 +804,15 @@ def init():
 
 # Update function for each frame
 def update(frame):
-    particleA.update_position()
     particleA.update_velocity(a)
-    particleB.update_position()
-    particleB.update_velocity(a)
+    particleA.update_position()
 
+<<<<<<< HEAD
+=======
+    particleB.update_velocity(a) 
+    particleB.update_position()
+
+>>>>>>> 8e6f426cdd93f6c4381a7ab414d2e60cc96c5dd2
     track_x_A.append(particleA.r[0])
     track_y_A.append(particleA.r[1])
     track_line_A.set_data(track_x_A, track_y_A)
@@ -936,8 +937,11 @@ def update(frame):
 
     # botsing tussen de deeltjes onderling
     if particleA.collide_detection(particleB):
-        particleA.v[0] = -particleA.v[0]
-        particleB.v[0] = -particleB.v[0]
+        particleA.v[0]=-particleA.v[0]
+        particleA.v[1]=-particleA.v[1]
+        particleB.v[0]=-particleB.v[0]
+        particleB.v[1]=-particleB.v[1]
+
 
     # botsing met de wand
     if particleA.r[0]**2>100: 
@@ -1038,10 +1042,10 @@ class ParticleClass:
         return np.linalg.norm(self.r - other.r) <= (self.R + other.R)
 
 # Simulation parameters
-dt = 0.1         # time step
+dt = 0.1        # time step
 num_steps = 1000  # number of time steps
 m1 = 1.0
-m2 = 50.0
+m2 = 50
 
 particleA = ParticleClass(m=m1, v=[0, 0], r=[-4.0, 0.0],R=0.45)  
 particleB = ParticleClass(m=m2, v=[-1, 0], r=[-2.0, 0.0],R=0.45)  
@@ -1090,11 +1094,11 @@ def update(frame):
         vB_new = vB - 2 * mA / (mA + mB) * np.dot(vB - vA, rB - rA) / (1e-12+np.linalg.norm(rB - rA))**2 * (rB - rA)
         particleA.v = vA_new
         particleB.v = vB_new
-        counter += 1
+        counter+=1
 
 
     # wall collision detection and response
-    if particleA.r[0]**2>100: # Check if particle is outside the bounds, np.abs could be used but is slower
+    if particleA.r[0]**2>9.55**2: # Check if particle is outside the bounds, np.abs could be used but is slower
         particleA.v[0] = -particleA.v[0]
         counter += 1
     if particleA.r[1]**2>100: 
@@ -1102,10 +1106,10 @@ def update(frame):
         counter += 1
 
     dot.set_data([particleB.r[0]], [particleB.r[1]])
-    if particleB.r[0]**2>100: 
+    if particleB.r[0]**2>9.55**2: 
         particleB.v[0] = -particleB.v[0]
 
-    if particleB.r[1]**2>100: 
+    if particleB.r[1]**2>9.55**2: 
         particleB.v[1] = -particleB.v[1]
 
     return dot, counter_text
