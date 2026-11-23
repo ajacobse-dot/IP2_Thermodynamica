@@ -807,12 +807,9 @@ def update(frame):
     particleA.update_velocity(a)
     particleA.update_position()
 
-<<<<<<< HEAD
-=======
     particleB.update_velocity(a) 
     particleB.update_position()
 
->>>>>>> 8e6f426cdd93f6c4381a7ab414d2e60cc96c5dd2
     track_x_A.append(particleA.r[0])
     track_y_A.append(particleA.r[1])
     track_line_A.set_data(track_x_A, track_y_A)
